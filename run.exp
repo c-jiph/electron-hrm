@@ -1,0 +1,25 @@
+#!/usr/bin/expect -f
+
+set DEVICE_MAC "EC:BB:79:59:25:D2"
+
+set timeout -1
+spawn bluetoothctl
+match_max 100000
+expect "Agent registered"
+send -- "remove $DEVICE_MAC\r"
+expect {
+	"*DEL*Device $DEVICE_MAC" {}
+	"Device $DEVICE_MAC not available" {}
+}
+send -- "scan on\r"
+expect "Discovery started*Device $DEVICE_MAC"
+send -- "pair $DEVICE_MAC\r"
+expect "Confirm passkey"
+send -- "yes\r"
+expect -exact "Pairing successful\r"
+send -- "scan off\r"
+send -- "quit\r"
+expect eof
+
+spawn yarn start
+expect eof
